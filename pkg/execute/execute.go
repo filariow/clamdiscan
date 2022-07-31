@@ -3,7 +3,8 @@ package execute
 type Executor interface {
 	Execute() error
 
-	ExecutedNum() uint64
+	Started() uint64
+	Terminated() uint64
 
 	Done() <-chan struct{}
 }

@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/filariow/polo/pkg/discover"
 	"github.com/filariow/polo/pkg/execute"
+	"github.com/schollz/progressbar/v3"
 )
 
 const folder = "/tmp/aa"
@@ -33,23 +33,32 @@ func main() {
 	c := execute.NewShellExecutor(f, e.Visited(), 8)
 	c.Execute()
 
+	b := progressbar.NewOptions64(
+		int64(ce.VisitedNum()),
+		progressbar.OptionUseANSICodes(true),
+		progressbar.OptionSetDescription("Scanned files..."),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionThrottle(50*time.Millisecond),
+		progressbar.OptionFullWidth(),
+		progressbar.OptionSetVisibility(true),
+	)
+
 	func() {
 		for {
 			select {
 			case <-c.Done():
-				showProgress(e, c)
-				fmt.Println("")
+				showProgress(b, ce, c)
 				return
 			case <-time.After(200 * time.Millisecond):
-				showProgress(ce, c)
+				showProgress(b, ce, c)
 			}
 		}
 	}()
 
-	<-c.Done()
 	<-e.Done()
-
 	<-ce.Done()
+
+	time.Sleep(200 * time.Millisecond)
 }
 
 func countElements(e discover.Explorer) uint64 {
@@ -71,9 +80,10 @@ func countElements(e discover.Explorer) uint64 {
 	return e.VisitedNum()
 }
 
-func showProgress(ex discover.Explorer, ec execute.Executor) {
+func showProgress(bar *progressbar.ProgressBar, ex discover.Explorer, ec execute.Executor) {
 	r := ex.VisitedNum()
-	o := ec.ExecutedNum()
+	t := ec.Terminated()
 
-	fmt.Printf("executed/visited %d/%d\r", o, r)
+	bar.ChangeMax64(int64(r))
+	bar.Set64(int64(t))
 }

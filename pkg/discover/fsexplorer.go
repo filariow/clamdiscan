@@ -11,7 +11,7 @@ func NewFSExplorer(folder string) Explorer {
 	e := &fsExplorer{
 		fired:   false,
 		count:   0,
-		visited: make(chan string, 4),
+		visited: make(chan string),
 		errors:  make(chan error),
 		folder:  folder,
 		done:    make(chan struct{}),
