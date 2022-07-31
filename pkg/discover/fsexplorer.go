@@ -4,13 +4,14 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"sync/atomic"
 )
 
 func NewFSExplorer(folder string) Explorer {
 	e := &fsExplorer{
 		fired:   false,
 		count:   0,
-		visited: make(chan string),
+		visited: make(chan string, 4),
 		errors:  make(chan error),
 		folder:  folder,
 		done:    make(chan struct{}),
@@ -22,7 +23,7 @@ func NewFSExplorer(folder string) Explorer {
 type fsExplorer struct {
 	fired bool
 
-	count   int64
+	count   uint64
 	visited chan string
 	errors  chan error
 
@@ -44,9 +45,13 @@ func (e *fsExplorer) Explore() error {
 }
 
 func (e *fsExplorer) explore() {
+	defer e.dispose()
 	fsys := os.DirFS(e.folder)
 	fs.WalkDir(fsys, ".", e.dirWalker)
 
+}
+
+func (e *fsExplorer) dispose() {
 	close(e.visited)
 	close(e.errors)
 	close(e.done)
@@ -86,10 +91,10 @@ func (e *fsExplorer) Visited() <-chan string {
 
 func (e *fsExplorer) visit(p string) {
 	e.visited <- p
-	e.count++
+	atomic.AddUint64(&e.count, 1)
 }
 
-func (e *fsExplorer) VisitedNum() int64 {
+func (e *fsExplorer) VisitedNum() uint64 {
 	return e.count
 }
 

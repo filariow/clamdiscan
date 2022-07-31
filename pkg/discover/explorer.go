@@ -7,7 +7,7 @@ type Explorer interface {
 
 	Done() <-chan struct{}
 
-	VisitedNum() int64
+	VisitedNum() uint64
 	Visited() <-chan string
 	Errors() <-chan error
 }

@@ -1,13 +1,14 @@
 package execute
 
 import (
-	"time"
+	"sync/atomic"
 )
 
 type logExecutor struct {
 	source <-chan string
-	count  int64
-	done   chan struct{}
+
+	count uint64
+	done  chan struct{}
 }
 
 func NewLogExecutor(source <-chan string) Executor {
@@ -31,16 +32,13 @@ func (l *logExecutor) Execute() error {
 }
 
 func (l *logExecutor) execute(e string) {
-	// fmt.Println(e)
-	l.count++
-
-	time.Sleep(40 * time.Millisecond)
+	atomic.AddUint64(&l.count, 1)
 }
 
 func (l *logExecutor) Done() <-chan struct{} {
 	return l.done
 }
 
-func (l *logExecutor) ExecutedNum() int64 {
+func (l *logExecutor) ExecutedNum() uint64 {
 	return l.count
 }
