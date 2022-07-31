@@ -9,7 +9,6 @@ import (
 func NewFSExplorer(folder string) Explorer {
 	e := &fsExplorer{
 		fired:   false,
-		toVisit: []string{folder},
 		count:   0,
 		visited: make(chan string),
 		errors:  make(chan error),
@@ -20,8 +19,7 @@ func NewFSExplorer(folder string) Explorer {
 }
 
 type fsExplorer struct {
-	fired   bool
-	toVisit []string
+	fired bool
 
 	count   int64
 	visited chan string
@@ -43,17 +41,8 @@ func (e *fsExplorer) Explore() error {
 }
 
 func (e *fsExplorer) explore() {
-	for {
-		if len(e.toVisit) == 0 {
-			break
-		}
-
-		p := e.toVisit[0]
-		e.toVisit = e.toVisit[1:]
-
-		fsys := os.DirFS(p)
-		fs.WalkDir(fsys, ".", e.dirWalker)
-	}
+	fsys := os.DirFS(e.folder)
+	fs.WalkDir(fsys, ".", e.dirWalker)
 
 	close(e.visited)
 	close(e.errors)
@@ -68,12 +57,10 @@ func (e *fsExplorer) dirWalker(p string, d fs.DirEntry, err error) error {
 		return nil
 	}
 
-	if d.IsDir() {
-		e.toVisit = append(e.toVisit, p)
-		return nil
+	if !d.IsDir() {
+		e.visit(p)
 	}
 
-	e.visit(p)
 	return nil
 }
 

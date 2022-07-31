@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/filariow/polo/pkg/discover"
+	"github.com/filariow/polo/pkg/execute"
 )
 
 func main() {
@@ -14,9 +15,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for v := range e.Visited() {
-		log.Println("visited", v)
-	}
+	v := e.Visited()
+	c := execute.NewLogExecutor(v)
+	c.Execute()
 
-	log.Println("Completed")
+	<-c.Done()
 }
