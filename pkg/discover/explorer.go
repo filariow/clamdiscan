@@ -5,6 +5,8 @@ type Explorer interface {
 	Sleep() error
 	Wake() error
 
+	Done() <-chan struct{}
+
 	VisitedNum() int64
 	Visited() <-chan string
 	Errors() <-chan error

@@ -13,6 +13,7 @@ func NewFSExplorer(folder string) Explorer {
 		visited: make(chan string),
 		errors:  make(chan error),
 		folder:  folder,
+		done:    make(chan struct{}),
 	}
 
 	return e
@@ -24,6 +25,8 @@ type fsExplorer struct {
 	count   int64
 	visited chan string
 	errors  chan error
+
+	done chan struct{}
 
 	folder string
 }
@@ -46,6 +49,7 @@ func (e *fsExplorer) explore() {
 
 	close(e.visited)
 	close(e.errors)
+	close(e.done)
 }
 
 func (e *fsExplorer) dirWalker(p string, d fs.DirEntry, err error) error {
@@ -87,4 +91,8 @@ func (e *fsExplorer) visit(p string) {
 
 func (e *fsExplorer) VisitedNum() int64 {
 	return e.count
+}
+
+func (e *fsExplorer) Done() <-chan struct{} {
+	return e.done
 }

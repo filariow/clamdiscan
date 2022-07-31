@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/filariow/polo/pkg/discover"
 	"github.com/filariow/polo/pkg/execute"
@@ -19,5 +21,23 @@ func main() {
 	c := execute.NewLogExecutor(v)
 	c.Execute()
 
-	<-c.Done()
+	for {
+		time.Sleep(1 * time.Second)
+		select {
+		case <-c.Done():
+			showProgress(e, c)
+			fmt.Println("")
+			return
+		default:
+			showProgress(e, c)
+		}
+	}
+
+}
+
+func showProgress(ex discover.Explorer, ec execute.Executor) {
+	r := ex.VisitedNum()
+	o := ec.ExecutedNum()
+
+	fmt.Printf("visited/executed %d/%d\r", r, o)
 }
