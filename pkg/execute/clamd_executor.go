@@ -80,7 +80,9 @@ func (l *clamdExecutor) execute(e string) error {
 	}
 
 	for _, r := range rr {
-		fmt.Fprintf(os.Stderr, "File: %v, Status: %v\n", a, r.Status)
+		if r.Status != "OK" {
+			fmt.Fprintf(os.Stderr, "File: %v, Status: %v\n", a, r.Status)
+		}
 	}
 
 	return nil
