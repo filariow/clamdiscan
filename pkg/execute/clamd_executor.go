@@ -6,11 +6,14 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"sync/atomic"
 
 	"github.com/baruwa-enterprise/clamd"
 )
+
+var ErrInvalidClamdAddress = fmt.Errorf("Invalid clamd address")
 
 type clamdExecutor struct {
 	folder string
@@ -21,27 +24,44 @@ type clamdExecutor struct {
 	done        chan struct{}
 	concurrency int
 
-	workers     chan struct{}
-	found       chan string
-	clamdClient *clamd.Client
+	workers chan struct{}
+	found   chan string
+
+	clamdAddress string
+	clamdClient  *clamd.Client
 }
 
-func NewClamdExecutor(folder string, source <-chan string, t int) Executor {
+func NewClamdExecutor(address string, folder string, source <-chan string, t int) Executor {
 	e := &clamdExecutor{
-		folder:      folder,
-		source:      source,
-		started:     0,
-		terminated:  0,
-		done:        make(chan struct{}),
-		concurrency: t,
-		workers:     make(chan struct{}, t),
-		found:       make(chan string),
+		folder:       folder,
+		source:       source,
+		started:      0,
+		terminated:   0,
+		done:         make(chan struct{}),
+		concurrency:  t,
+		workers:      make(chan struct{}, t),
+		found:        make(chan string),
+		clamdAddress: address,
 	}
 	return e
 }
 
+func (l *clamdExecutor) parseAddress() (string, string, error) {
+	ss := strings.Split(l.clamdAddress, "://")
+	if len(ss) != 2 {
+		return "", "", ErrInvalidClamdAddress
+	}
+
+	return ss[0], ss[1], nil
+}
+
 func (l *clamdExecutor) Execute() error {
-	c, err := clamd.NewClient("unix", "/var/run/clamav/clamd.ctl")
+	h, a, err := l.parseAddress()
+	if err != nil {
+		return fmt.Errorf("error parsing address '%v': %w", l.clamdAddress, err)
+	}
+
+	c, err := clamd.NewClient(h, a)
 	if err != nil {
 		return err
 	}

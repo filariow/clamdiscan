@@ -30,7 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := execute.NewClamdExecutor(f, e.Visited(), 1)
+	c := execute.NewClamdExecutor("unix:///var/run/clamav/clamd.ctl", f, e.Visited(), 8)
 	c.Execute()
 
 	b := progressbar.NewOptions64(
