@@ -2,7 +2,10 @@ module github.com/filariow/polo
 
 go 1.18
 
-require github.com/schollz/progressbar/v3 v3.9.0
+require (
+	github.com/baruwa-enterprise/clamd v1.0.1
+	github.com/schollz/progressbar/v3 v3.9.0
+)
 
 require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect

@@ -30,14 +30,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := execute.NewShellExecutor(f, e.Visited(), 8)
+	c := execute.NewClamdExecutor(f, e.Visited(), 1)
 	c.Execute()
 
 	b := progressbar.NewOptions64(
 		int64(ce.VisitedNum()),
 		progressbar.OptionUseANSICodes(true),
 		progressbar.OptionSetDescription("Scanned files..."),
-		progressbar.OptionShowBytes(true),
+		progressbar.OptionShowCount(),
 		progressbar.OptionThrottle(50*time.Millisecond),
 		progressbar.OptionFullWidth(),
 		progressbar.OptionSetVisibility(true),
