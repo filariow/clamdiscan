@@ -10,13 +10,13 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-const folder = "/tmp/aa"
+var socket = "unix:///var/run/clamav/clamd.ctl"
 
 func getFolder() string {
 	if len(os.Args) == 2 {
 		return os.Args[1]
 	}
-	return folder
+	return "."
 }
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := execute.NewClamdExecutor("unix:///var/run/clamav/clamd.ctl", f, e.Visited(), 8)
+	c := execute.NewClamdExecutor(socket, f, e.Visited(), 8)
 	c.Execute()
 
 	b := progressbar.NewOptions64(
