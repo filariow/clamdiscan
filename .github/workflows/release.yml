@@ -34,7 +34,7 @@ jobs:
     name: Deploy releases
     strategy:
       matrix:
-        os: ["windows", "linux"]
+        os: ["linux"]
         arch: ["386", "amd64"]
     runs-on: ubuntu-latest
     env:
